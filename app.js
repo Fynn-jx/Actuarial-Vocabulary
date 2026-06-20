@@ -132,16 +132,19 @@ function renderTerm() {
   elements.meta.textContent = `${chapter}${module}`;
   elements.english.textContent = term.en || "Untitled Term";
   elements.chinese.textContent = term.zh || "未命名术语";
-  elements.exampleEnglish.textContent = term.example_en || "No example sentence available.";
-  elements.exampleChinese.textContent = term.example_zh || "暂无中文含义。";
+  renderInlineFormulaText(
+    term.example_en || "No example sentence available.",
+    elements.exampleEnglish
+  );
+  renderInlineFormulaText(term.example_zh || "暂无中文含义。", elements.exampleChinese);
 
-  const symbol = cleanSymbol(term.symbol);
+  const symbol = normalizeSymbol(term.symbol);
   if (symbol) {
     elements.symbol.hidden = false;
-    elements.symbol.textContent = symbol;
+    renderFormula(symbol, elements.symbol);
   } else {
     elements.symbol.hidden = true;
-    elements.symbol.textContent = "";
+    elements.symbol.replaceChildren();
   }
 }
 
@@ -237,8 +240,9 @@ function renderEmpty(title, message) {
   elements.english.textContent = title;
   elements.chinese.textContent = message;
   elements.symbol.hidden = true;
-  elements.exampleEnglish.textContent = "";
-  elements.exampleChinese.textContent = "";
+  elements.symbol.replaceChildren();
+  elements.exampleEnglish.replaceChildren();
+  elements.exampleChinese.replaceChildren();
   elements.buttons.forEach((button) => {
     button.disabled = true;
   });
@@ -248,12 +252,143 @@ function renderEmpty(title, message) {
   elements.wordList.replaceChildren();
 }
 
-function cleanSymbol(value) {
+function normalizeSymbol(value) {
   if (!value) return "";
   return String(value)
-    .replaceAll("$", "")
     .replaceAll("\\(", "")
     .replaceAll("\\)", "")
+    .trim();
+}
+
+function renderFormula(value, element) {
+  const source = normalizeSymbol(value);
+  const fragment = document.createDocumentFragment();
+  const segments = getFormulaSegments(source);
+
+  segments.forEach((segment) => {
+    if (segment.type === "math") {
+      const math = document.createElement("span");
+      math.className = "math-fragment";
+      renderMathSegment(segment.value, math);
+      fragment.appendChild(math);
+    } else if (segment.value) {
+      const text = document.createElement("span");
+      text.className = "math-text";
+      text.textContent = segment.value;
+      fragment.appendChild(text);
+    }
+  });
+
+  element.replaceChildren(fragment);
+}
+
+function getFormulaSegments(source) {
+  const segments = [];
+  const mathPattern = /\$([^$]+)\$/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = mathPattern.exec(source)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: "text", value: source.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: "math", value: match[1].trim() });
+    lastIndex = mathPattern.lastIndex;
+  }
+
+  if (lastIndex < source.length) {
+    segments.push({ type: "text", value: source.slice(lastIndex) });
+  }
+
+  if (segments.length === 0) {
+    segments.push({ type: looksLikeFormula(source) ? "math" : "text", value: source });
+  }
+
+  return segments;
+}
+
+function renderMathSegment(tex, element) {
+  if (window.katex) {
+    window.katex.render(tex, element, {
+      displayMode: false,
+      strict: "ignore",
+      throwOnError: false,
+      trust: false
+    });
+    return;
+  }
+
+  element.textContent = getPlainFormula(tex);
+}
+
+function renderInlineFormulaText(value, element) {
+  const fragment = document.createDocumentFragment();
+  const segments = getInlineFormulaSegments(value);
+
+  segments.forEach((segment) => {
+    if (segment.type === "math") {
+      const math = document.createElement("span");
+      math.className = "inline-math-fragment";
+      renderMathSegment(segment.value, math);
+      fragment.appendChild(math);
+    } else if (segment.value) {
+      fragment.appendChild(document.createTextNode(segment.value));
+    }
+  });
+
+  element.replaceChildren(fragment);
+}
+
+function getInlineFormulaSegments(value) {
+  const source = String(value);
+  const segments = [];
+  const formulaPattern =
+    /\bt\s+[pq]_[A-Za-z0-9]+|\d+(?:\.\d+)?[pq]_[A-Za-z0-9]+|a-double-dot_[A-Za-z0-9]+|A-bar_[A-Za-z0-9]+|mu_[A-Za-z0-9]+|[A-Za-z]+_\[[^\]]+\]\+\d+|[A-Za-z]+_\{[^}]+\}|[A-Za-z]+_[A-Za-z0-9]+(?:\s*\/\s*[A-Za-z]+_[A-Za-z0-9]+)?/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = formulaPattern.exec(source)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: "text", value: source.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: "math", value: normalizeInlineFormula(match[0]) });
+    lastIndex = formulaPattern.lastIndex;
+  }
+
+  if (lastIndex < source.length) {
+    segments.push({ type: "text", value: source.slice(lastIndex) });
+  }
+
+  return segments.length > 0 ? segments : [{ type: "text", value: source }];
+}
+
+function normalizeInlineFormula(value) {
+  return value
+    .trim()
+    .replace(/^a-double-dot_([A-Za-z0-9]+)$/, "\\ddot{a}_{$1}")
+    .replace(/^A-bar_([A-Za-z0-9]+)$/, "\\bar{A}_{$1}")
+    .replace(/^mu_([A-Za-z0-9]+)$/, "\\mu_{$1}")
+    .replace(/\bt\s+([pq])_([A-Za-z0-9]+)/g, "{}_t $1_{$2}")
+    .replace(/(\d+(?:\.\d+)?)([pq])_([A-Za-z0-9]+)/g, "{}_{$1}$2_{$3}")
+    .replace(/([A-Za-z]+)_\[([^\]]+)\]\+(\d+)/g, "$1_{[$2]+$3}")
+    .replace(/([A-Za-z]+)_\{([^}]+)\}/g, "$1_{$2}")
+    .replace(/([A-Za-z]+)_([A-Za-z0-9]+)/g, "$1_{$2}");
+}
+
+function looksLikeFormula(value) {
+  return /[\\_^{}]/.test(value);
+}
+
+function getPlainFormula(value) {
+  return value
+    .replaceAll("\\mu", "μ")
+    .replaceAll("\\omega", "ω")
+    .replaceAll("\\delta", "δ")
+    .replaceAll("\\bar", "bar")
+    .replaceAll("\\ddot", "ddot")
+    .replaceAll("\\mathring", "ring")
+    .replaceAll("\\overline", "overline")
+    .replaceAll("\\", "")
     .trim();
 }
 
