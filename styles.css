@@ -1,0 +1,244 @@
+:root {
+  color-scheme: light;
+  --bg: #f7f9fb;
+  --card: #ffffff;
+  --ink: #172126;
+  --muted: #667782;
+  --soft: #8a9aa4;
+  --border: #e5edf1;
+  --know: #139a89;
+  --know-strong: #0b7669;
+  --unsure: #c8892d;
+  --unsure-strong: #9f681b;
+  --unknown: #d85d4f;
+  --unknown-strong: #ae3f34;
+  --shadow: 0 24px 80px rgba(23, 33, 38, 0.08);
+  --radius: 8px;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--bg);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(247, 249, 251, 0.94)),
+    var(--bg);
+}
+
+button {
+  font: inherit;
+}
+
+.study-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+}
+
+.term-card {
+  width: min(720px, 100%);
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 32px;
+  padding: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.term-meta {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.term-heading {
+  display: grid;
+  gap: 12px;
+}
+
+.term-heading h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(38px, 6vw, 64px);
+  line-height: 0.98;
+  letter-spacing: 0;
+  font-weight: 760;
+}
+
+.term-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.25;
+  font-weight: 560;
+}
+
+.term-symbol {
+  width: fit-content;
+  max-width: 100%;
+  margin: -12px 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--know-strong);
+  background: #f0faf8;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 16px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.example-block {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 8px;
+}
+
+.example-label {
+  margin: 0;
+  color: var(--soft);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.example-en {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.32;
+  font-weight: 620;
+}
+
+.example-zh {
+  margin: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.feedback-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.feedback-btn {
+  min-height: 58px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 720;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+
+.feedback-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(23, 33, 38, 0.12);
+}
+
+.feedback-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.feedback-btn:focus-visible {
+  outline: 3px solid rgba(19, 154, 137, 0.24);
+  outline-offset: 3px;
+}
+
+.feedback-btn.know {
+  background: var(--know);
+}
+
+.feedback-btn.know:hover {
+  background: var(--know-strong);
+}
+
+.feedback-btn.unsure {
+  background: var(--unsure);
+}
+
+.feedback-btn.unsure:hover {
+  background: var(--unsure-strong);
+}
+
+.feedback-btn.unknown {
+  background: var(--unknown);
+}
+
+.feedback-btn.unknown:hover {
+  background: var(--unknown-strong);
+}
+
+@media (max-width: 720px) {
+  .study-screen {
+    min-height: 100svh;
+    align-items: stretch;
+    padding: 14px;
+  }
+
+  .term-card {
+    min-height: calc(100svh - 28px);
+    padding: 28px 22px 20px;
+    gap: 24px;
+    box-shadow: 0 14px 44px rgba(23, 33, 38, 0.08);
+  }
+
+  .term-heading h1 {
+    font-size: clamp(34px, 10vw, 46px);
+  }
+
+  .term-heading p {
+    font-size: 22px;
+  }
+
+  .example-en {
+    font-size: 22px;
+  }
+
+  .example-zh {
+    font-size: 17px;
+  }
+
+  .feedback-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .feedback-btn {
+    min-height: 54px;
+    font-size: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-btn {
+    transition: none;
+  }
+}
