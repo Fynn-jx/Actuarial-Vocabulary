@@ -12,6 +12,36 @@
     <script defer src="./app.js"></script>
   </head>
   <body>
+    <button
+      class="word-list-toggle"
+      id="wordListToggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="wordPanel"
+    >
+      已刷 0/0
+    </button>
+
+    <aside class="word-panel" id="wordPanel" aria-label="词表状态" hidden>
+      <div class="word-panel-header">
+        <div>
+          <p class="word-panel-kicker">词表状态</p>
+          <h2 id="wordPanelTitle">全部单词</h2>
+          <p id="wordPanelSummary">已刷 0/0</p>
+        </div>
+        <button
+          class="word-panel-close"
+          id="wordPanelClose"
+          type="button"
+          aria-label="关闭词表"
+        >
+          ×
+        </button>
+      </div>
+      <div class="word-panel-stats" id="wordPanelStats" aria-label="学习统计"></div>
+      <div class="word-list" id="wordList"></div>
+    </aside>
+
     <main class="study-screen" aria-label="寿险精算词汇学习">
       <section class="term-card" aria-live="polite">
         <div class="term-meta" id="termMeta">读取词库中...</div>
